@@ -1,0 +1,59 @@
+#Проект_Gitea
+
+#Скачиваем Gitea:
+sudo wget -O /usr/local/bin/gitea https://dl.gitea.io/gitea/1.16.8/gitea-1.16.8-linux-amd64
+
+#Устанавливаем права на выполнение Gitea:
+sudo chmod +x /usr/local/bin/gitea
+
+#Создаем файл сервиса для GItea:
+sudo nano /etc/systemd/system/gitea.service
+
+#Добавляем в этот файл  следующую конфигурацию:
+[Unit]
+Description=Gitea
+After=syslog.target
+After=network.target
+Wants=network-online.target
+
+[Service]
+RestartSec=2s
+Type=simple
+User=git
+Group=git
+WorkingDirectory=/var/lib/gitea/
+ExecStart=/usr/local/bin/gitea web
+Restart=always
+Environment=USER=git HOME=/home/git GITEA_WORK_DIR=/var/lib/gitea/
+
+[Install]
+WantedBy=multi-user.target
+
+#Проверяем права доступа к директории:
+sudo chmod 755 /usr/local/bin
+
+#Проверяем права доступа к файлу:
+sudo chmod +x /usr/local/bin/gitea
+
+#Перезапускаем демона systemd:
+sudo systemctl daemon-reload
+
+#Запускаем и включаем сервис gitea:
+sudo systemctl start gitea
+sudo systemctl enable gitea
+
+#Проверяем статус Gitea:
+sudo systemctl status gitea
+
+#Логиниться можно через веб-морду напрямую
+#Скинуть пароль можно так:
+sudo -u git /usr/local/bin/gitea admin user change-password --username "логин" --password "пароль" -c /var/lib/gitea/custom/conf/app.ini
+
+#Изменить статус пользователя на админа:
+sudo -u git /usr/local/bin/gitea admin user change --username "логин" --admin --c /var/lib/gitea/custom/conf/app.ini
+
+
+
+#Развёртывание Gitea в Docker:
+
+docker run -d --name=gitea -p 3000:3000 -p 222:22 -v /var/lib/gitea:/data gitea/gitea:latest
